@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyAutomate — Automation Toolkit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #14141f;
+            --surface-2: #1e1e2e;
+            --accent: #a78bfa;
+            --accent-2: #f472b6;
+            --green: #4ade80;
+            --text: #e2e8f0;
+            --text-dim: #64748b;
+            --border: #1e293b;
+            --radius: 14px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1e1b4b, #312e81, #4c1d95);
+            padding: 18px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .header h1 span {
+            color: var(--accent);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--surface);
+            padding: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .tab:hover {
+            background: var(--surface-2);
+            color: var(--text);
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Panels */
+        .panel {
+            display: none;
+            max-width: 900px;
+            margin: 24px auto;
+            padding: 0 20px;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+        }
+
+        /* Forms */
+        textarea,
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        textarea:focus,
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            transition: transform 0.15s, opacity 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-pink {
+            background: var(--accent-2);
+            color: white;
+        }
+
+        .btn-green {
+            background: var(--green);
+            color: #0a0a0f;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-box {
+            background: var(--surface-2);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-box .label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-box .value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-top: 4px;
+        }
+
+        /* Password List */
+        .pwd-list {
+            list-style: none;
+        }
+
+        .pwd-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--surface-2);
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+
+        .pwd-text {
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            flex: 1;
+        }
+
+        .pwd-strength {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .copy-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Hash Output */
+        .hash-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px 14px;
+            background: var(--surface-2);
+            border-radius: 10px;
+        }
+
+        .hash-label {
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: var(--accent);
+            min-width: 55px;
+            text-transform: uppercase;
+        }
+
+        .hash-value {
+            font-family: monospace;
+            font-size: 0.78rem;
+            word-break: break-all;
+            color: var(--text-dim);
+        }
+
+        /* System Monitor */
+        .meter {
+            height: 8px;
+            background: var(--surface-2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .meter-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+
+        /* Word Cloud */
+        .word-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .word-tag {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+        }
+
+        /* Checkbox + Controls */
+        .control-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+
+        .control-row label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>⚡ Py<span>Automate</span></h1>
+        <span style="color:var(--text-dim);font-size:0.8rem">Python Automation Toolkit</span>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('text')">📝 Text Analyzer</button>
+        <button class="tab" onclick="switchTab('password')">🔐 Password Gen</button>
+        <button class="tab" onclick="switchTab('hash')">🔒 Hash Tool</button>
+        <button class="tab" onclick="switchTab('system')">📊 System Monitor</button>
+    </div>
+
+    <!-- Text Analyzer -->
+    <div class="panel active" id="panel-text">
+        <div class="card">
+            <h3>📝 Text Analysis</h3>
+            <textarea id="textInput" rows="6"
+                placeholder="Paste or type your text here to analyze...">Python is a versatile and powerful programming language that has become one of the most popular choices for developers worldwide. Its clean syntax and readability make it an excellent choice for beginners, while its extensive library ecosystem and powerful frameworks make it suitable for complex enterprise applications. From web development with Django and Flask to data science with Pandas and NumPy, Python continues to dominate multiple domains of software engineering.</textarea>
+            <div style="margin-top:12px"><button class="btn btn-primary" onclick="analyzeText()">Analyze Text</button>
+            </div>
+        </div>
+        <div id="textResults"></div>
+    </div>
+
+    <!-- Password Generator -->
+    <div class="panel" id="panel-password">
+        <div class="card">
+            <h3>🔐 Password Generator</h3>
+            <div class="control-row">
+                <label>Length: <input type="number" id="pwdLength" value="16" min="4" max="64"
+                        style="width:70px"></label>
+                <label>Count: <input type="number" id="pwdCount" value="5" min="1" max="20" style="width:60px"></label>
+                <label><input type="checkbox" id="pwdUpper" checked> Uppercase</label>
+                <label><input type="checkbox" id="pwdDigits" checked> Digits</label>
+                <label><input type="checkbox" id="pwdSymbols" checked> Symbols</label>
+            </div>
+            <button class="btn btn-pink" onclick="generatePasswords()">Generate Passwords</button>
+        </div>
+        <div id="pwdResults"></div>
+    </div>
+
+    <!-- Hash Tool -->
+    <div class="panel" id="panel-hash">
+        <div class="card">
+            <h3>🔒 Hash Generator</h3>
+            <input type="text" id="hashInput" placeholder="Enter text to hash...">
+            <div style="margin-top:12px"><button class="btn btn-green" onclick="computeHash()">Compute Hashes</button>
+            </div>
+        </div>
+        <div id="hashResults"></div>
+    </div>
+
+    <!-- System Monitor -->
+    <div class="panel" id="panel-system">
+        <div id="systemResults">
+            <div class="card">
+                <h3>Loading system stats...</h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-' + name).classList.add('active');
+            event.target.classList.add('active');
+            if (name === 'system') loadSystem();
+        }
+
+        async function analyzeText() {
+            const text = document.getElementById('textInput').value;
+            const res = await fetch('/api/analyze-text', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+            const data = await res.json();
+
+            const topWords = Object.entries(data.top_words).slice(0, 15)
+                .map(([w, c]) => `<span class="word-tag" style="font-size:${Math.min(0.7 + c * 0.08, 1.2)}rem">${w} (${c})</span>`).join('');
+
+            document.getElementById('textResults').innerHTML = `
+        <div class="card"><h3>Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-box"><div class="label">Words</div><div class="value">${data.words}</div></div>
+                <div class="stat-box"><div class="label">Characters</div><div class="value">${data.characters}</div></div>
+                <div class="stat-box"><div class="label">Sentences</div><div class="value">${data.sentences}</div></div>
+                <div class="stat-box"><div class="label">Paragraphs</div><div class="value">${data.paragraphs}</div></div>
+                <div class="stat-box"><div class="label">Unique Words</div><div class="value">${data.unique_words}</div></div>
+                <div class="stat-box"><div class="label">Avg Word Len</div><div class="value">${data.avg_word_length}</div></div>
+                <div class="stat-box"><div class="label">Reading Time</div><div class="value">${data.reading_time_min}m</div></div>
+                <div class="stat-box"><div class="label">Readability</div><div class="value">${data.readability_grade}</div></div>
+            </div>
+        </div>
+        <div class="card"><h3>Top Words</h3><div class="word-cloud">${topWords}</div></div>
+    `;
+        }
+
+        async function generatePasswords() {
+            const res = await fetch('/api/generate-password', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    length: parseInt(document.getElementById('pwdLength').value),
+                    count: parseInt(document.getElementById('pwdCount').value),
+                    uppercase: document.getElementById('pwdUpper').checked,
+                    digits: document.getElementById('pwdDigits').checked,
+                    symbols: document.getElementById('pwdSymbols').checked,
+                })
+            });
+            const data = await res.json();
+            const html = data.passwords.map(p => `
+        <div class="pwd-item">
+            <span class="pwd-text">${p.password}</span>
+            <span class="pwd-strength" style="background:${p.strength.color}20;color:${p.strength.color}">${p.strength.label}</span>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('${p.password}');this.textContent='Copied!'">Copy</button>
+        </div>
+    `).join('');
+            document.getElementById('pwdResults').innerHTML = `<div class="card"><h3>Generated Passwords</h3><div class="pwd-list">${html}</div></div>`;
+        }
+
+        async function computeHash() {
+            const text = document.getElementById('hashInput').value;
+            const res = await fetch('/api/hash', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+            const data = await res.json();
+            const html = Object.entries(data).map(([algo, hash]) => `
+        <div class="hash-row"><span class="hash-label">${algo}</span><span class="hash-value">${hash}</span></div>
+    `).join('');
+            document.getElementById('hashResults').innerHTML = `<div class="card"><h3>Hash Results</h3>${html}</div>`;
+        }
+
+        async function loadSystem() {
+            const res = await fetch('/api/system-stats');
+            const d = await res.json();
+            document.getElementById('systemResults').innerHTML = `
+        <div class="card"><h3>System Resources</h3>
+            <div class="stats-grid">
+                <div class="stat-box"><div class="label">CPU</div><div class="value" style="color:${d.cpu_percent > 70 ? '#f44336' : 'var(--green)'}">${d.cpu_percent}%</div></div>
+                <div class="stat-box"><div class="label">Memory</div><div class="value">${d.memory.used_gb}/${d.memory.total_gb} GB</div></div>
+                <div class="stat-box"><div class="label">Disk</div><div class="value">${d.disk.used_gb}/${d.disk.total_gb} GB</div></div>
+                <div class="stat-box"><div class="label">Processes</div><div class="value">${d.processes}</div></div>
+            </div>
+            <div style="margin-top:16px">
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem"><span>CPU Usage</span><span>${d.cpu_percent}%</span></div>
+                <div class="meter"><div class="meter-fill" style="width:${d.cpu_percent}%;background:${d.cpu_percent > 70 ? '#f44336' : 'var(--green)'}"></div></div>
+            </div>
+            <div style="margin-top:12px">
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem"><span>Memory</span><span>${d.memory.percent}%</span></div>
+                <div class="meter"><div class="meter-fill" style="width:${d.memory.percent}%;background:var(--accent)"></div></div>
+            </div>
+            <div style="margin-top:12px">
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem"><span>Disk</span><span>${d.disk.percent}%</span></div>
+                <div class="meter"><div class="meter-fill" style="width:${d.disk.percent}%;background:var(--accent-2)"></div></div>
+            </div>
+        </div>
+    `;
+        }
+
+        // Auto-analyze on load
+        analyzeText();
+    </script>
+</body>
+
+</html>
