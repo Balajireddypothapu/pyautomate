@@ -25,6 +25,15 @@ A powerful Python automation toolkit with text analysis, password generation, ha
 - MD5, SHA-1, SHA-256, SHA-512 hashing
 - Instant computation for any text input
 
+### 🔄 Data Converter
+- Instant conversion between CSV and JSON formats
+- Accurate formatting and robust data handling
+
+### 📄 AI Resume Matcher v2
+- Compare resumes against job descriptions to discover missing keywords
+- Calculate an ATS match score with visual strength indicators
+- Receive tailored actionable advice based on match strength
+
 ### 📊 System Monitor
 - CPU, memory, and disk usage with live meters
 - Process count and network statistics
@@ -68,10 +77,12 @@ Open **http://localhost:5002** in your browser.
 | `POST` | `/api/hash` | Compute MD5, SHA-1, SHA-256, SHA-512 |
 | `GET` | `/api/system-stats` | Get system resource statistics |
 | `POST` | `/api/analyze-dir` | Analyze directory structure |
+| `POST` | `/api/convert-data` | Convert between CSV and JSON formats |
+| `POST` | `/api/analyze-resume` | Analyze resume against a job description |
 
-## 📸 Screenshots
+## 📸 Showcase
 
-> Screenshots will be added after deployment.
+![PyAutomate Features Demo](pyautomate_showcase_v2.webp)
 
 ## 📜 License
 

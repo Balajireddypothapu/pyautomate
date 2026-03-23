@@ -336,6 +336,7 @@
         <button class="tab" onclick="switchTab('password')">🔐 Password Gen</button>
         <button class="tab" onclick="switchTab('hash')">🔒 Hash Tool</button>
         <button class="tab" onclick="switchTab('resume')">📄 Resume AI</button>
+        <button class="tab" onclick="switchTab('data')">🔄 Data Tools</button>
         <button class="tab" onclick="switchTab('system')">📊 System Monitor</button>
     </div>
 
@@ -401,7 +402,23 @@
         <div id="resumeResults"></div>
     </div>
 
-    <!-- System Monitor -->
+    <!-- Data Converter -->
+    <div class="panel" id="panel-data">
+        <div class="card">
+            <h3>🔄 Data Transformation</h3>
+            <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:12px">Convert between CSV and JSON formats
+                instantly.</p>
+            <div class="control-row">
+                <label><input type="radio" name="convMode" value="csv_to_json" checked> CSV to JSON</label>
+                <label><input type="radio" name="convMode" value="json_to_csv"> JSON to CSV</label>
+            </div>
+            <textarea id="dataInput" rows="10" placeholder="Paste your data here..."></textarea>
+            <div style="margin-top:16px">
+                <button class="btn btn-pink" onclick="convertData()">Convert Data</button>
+            </div>
+        </div>
+        <div id="dataResults"></div>
+    </div>
     <div class="panel" id="panel-system">
         <div id="systemResults">
             <div class="card">
@@ -495,20 +512,50 @@
         <div class="card">
             <h3>Match Analysis</h3>
             <div class="stats-grid">
-                <div class="stat-box"><div class="label">Match Score</div><div class="value" style="color:var(--accent)">${data.match_score}%</div></div>
+                <div class="stat-box">
+                    <div class="label">ATS Match Score</div>
+                    <div class="value" style="color:${data.color}">${data.match_score}%</div>
+                    <div style="font-size:0.7rem;font-weight:700;margin-top:4px;color:${data.color}">${data.strength}</div>
+                </div>
                 <div class="stat-box"><div class="label">Keywords Found</div><div class="value">${data.found_keywords.length}</div></div>
                 <div class="stat-box"><div class="label">Missing Keys</div><div class="value" style="color:var(--accent-2)">${data.missing_keywords.length}</div></div>
             </div>
+            <p style="background:var(--surface-2);padding:12px;border-radius:8px;margin-top:16px;font-size:0.85rem;border-left:4px solid ${data.color}">
+                <strong>AI Advice:</strong> ${data.advice}
+            </p>
             <div style="margin-top:20px">
-                <h4 style="font-size:0.8rem;margin-bottom:8px">✅ Keywords in Resume</h4>
+                <h4 style="font-size:0.8rem;margin-bottom:8px">✅ Detected Skills</h4>
                 <div class="word-cloud">${foundTags || 'No major keywords found.'}</div>
             </div>
             <div style="margin-top:20px">
-                <h4 style="font-size:0.8rem;margin-bottom:8px">❌ Missing Keywords</h4>
+                <h4 style="font-size:0.8rem;margin-bottom:8px">❌ Missing Skills (Recommendations)</h4>
                 <div class="word-cloud">${missingTags || 'No missing keywords identified! Great job.'}</div>
             </div>
         </div>
     `;
+        }
+
+        async function convertData() {
+            const content = document.getElementById('dataInput').value;
+            const mode = document.querySelector('input[name="convMode"]:checked').value;
+            if (!content) return alert("Please provide data to convert.");
+
+            const res = await fetch('/api/convert-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content, mode })
+            });
+            const data = await res.json();
+
+            document.getElementById('dataResults').innerHTML = `
+                <div class="card">
+                    <h3>Result</h3>
+                    <textarea id="dataOutput" rows="10" readonly>${data.result}</textarea>
+                    <div style="margin-top:12px">
+                        <button class="btn btn-green" onclick="navigator.clipboard.writeText(document.getElementById('dataOutput').value);this.textContent='Copied!'">Copy to Clipboard</button>
+                    </div>
+                </div>
+            `;
         }
 
         async function loadSystem() {

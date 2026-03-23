@@ -7,13 +7,13 @@ and system monitoring with a web-based dashboard.
 from flask import Flask, render_template, jsonify, request
 import os
 import json
+import io
 import csv
-import hashlib
 import re
+import hashlib
+import random
 from datetime import datetime, timedelta
 from collections import Counter
-import random
-import io
 
 app = Flask(__name__)
 
@@ -229,6 +229,39 @@ class SystemMonitor:
         }
 
 
+# ─── Data Converter Module ───────────────────────────────────────
+
+class DataConverter:
+    """Convert between different data formats."""
+    
+    @staticmethod
+    def csv_to_json(csv_text):
+        """Convert CSV to JSON format."""
+        try:
+            f = io.StringIO(csv_text.strip())
+            reader = csv.DictReader(f)
+            data = list(reader)
+            return json.dumps(data, indent=4)
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+    @staticmethod
+    def json_to_csv(json_text):
+        """Convert JSON (list of dicts) to CSV format."""
+        try:
+            data = json.loads(json_text)
+            if not isinstance(data, list) or not data:
+                return "Error: JSON must be a non-empty list of objects."
+            
+            output = io.StringIO()
+            writer = csv.DictWriter(output, fieldnames=data[0].keys())
+            writer.writeheader()
+            writer.writerows(data)
+            return output.getvalue()
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+
 # ─── Resume Analyzer Module ──────────────────────────────────────
 
 class ResumeAnalyzer:
@@ -240,8 +273,8 @@ class ResumeAnalyzer:
         def get_keywords(text):
             # Simple keyword extraction (words > 3 chars, lowercase)
             words = re.findall(r'\b[a-z]{4,}\b', text.lower())
-            # Filter out common stop words (simplified list)
-            stops = {'with', 'from', 'that', 'this', 'your', 'have', 'been', 'which', 'about', 'their'}
+            # Filter out common stop words
+            stops = {'with', 'from', 'that', 'this', 'your', 'have', 'been', 'which', 'about', 'their', 'there', 'what', 'some', 'where'}
             return set(w for w in words if w not in stops)
 
         resume_keys = get_keywords(resume_text)
@@ -251,18 +284,34 @@ class ResumeAnalyzer:
         missing = job_keys.difference(resume_keys)
         
         # Sort and limit
-        found = sorted(list(found))[:20]
-        missing = sorted(list(missing))[:20]
+        found = sorted(list(found))
+        missing = sorted(list(missing))
         
         match_score = round(len(resume_keys.intersection(job_keys)) / max(len(job_keys), 1) * 100)
         
+        strength = "Weak"
+        color = "#f44336"
+        if match_score > 40:
+            strength = "Moderate"
+            color = "#ff9800"
+        if match_score > 70:
+            strength = "Strong"
+            color = "#4caf50"
+            
         return {
             "match_score": match_score,
-            "found_keywords": found,
-            "missing_keywords": missing,
-            "resume_count": len(resume_keys),
-            "job_count": len(job_keys)
+            "strength": strength,
+            "color": color,
+            "found_keywords": found[:30],
+            "missing_keywords": missing[:30],
+            "advice": ResumeAnalyzer._get_advice(match_score, len(missing))
         }
+    
+    @staticmethod
+    def _get_advice(score, missing_count):
+        if score > 80: return "Excellent match! Your resume is highly optimized for this role."
+        if score > 50: return "Good start. Try to incorporate more of the missing technical keywords found below."
+        return "Low match. You should significantly tailor your resume to include the core skills mentioned in the JD."
 
 # ─── Routes ──────────────────────────────────────────────────────
 
@@ -320,6 +369,22 @@ def system_stats():
     return jsonify(SystemMonitor.get_stats())
 
 
+@app.route("/api/convert-data", methods=["POST"])
+def convert_data():
+    data = request.json
+    mode = data.get("mode")
+    content = data.get("content", "")
+    
+    if mode == "csv_to_json":
+        result = DataConverter.csv_to_json(content)
+    elif mode == "json_to_csv":
+        result = DataConverter.json_to_csv(content)
+    else:
+        return jsonify({"error": "Invalid conversion mode"}), 400
+        
+    return jsonify({"result": result})
+
+
 @app.route("/api/hash", methods=["POST"])
 def compute_hash():
     data = request.json
@@ -333,4 +398,4 @@ def compute_hash():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5002)
+    app.run(debug=True, port=5003)
