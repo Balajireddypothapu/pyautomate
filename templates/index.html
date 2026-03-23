@@ -335,6 +335,7 @@
         <button class="tab active" onclick="switchTab('text')">📝 Text Analyzer</button>
         <button class="tab" onclick="switchTab('password')">🔐 Password Gen</button>
         <button class="tab" onclick="switchTab('hash')">🔒 Hash Tool</button>
+        <button class="tab" onclick="switchTab('resume')">📄 Resume AI</button>
         <button class="tab" onclick="switchTab('system')">📊 System Monitor</button>
     </div>
 
@@ -376,6 +377,28 @@
             </div>
         </div>
         <div id="hashResults"></div>
+    </div>
+
+    <!-- Resume Analyzer -->
+    <div class="panel" id="panel-resume">
+        <div class="card">
+            <h3>📄 Resume AI Keyword Matcher</h3>
+            <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:12px">Compare your resume against a job
+                description to find missing keywords and improve your ATS score.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div>
+                    <h4 style="font-size:0.75rem;margin-bottom:8px;color:var(--accent)">Your Resume</h4>
+                    <textarea id="resumeInput" rows="8" placeholder="Paste your resume text here..."></textarea>
+                </div>
+                <div>
+                    <h4 style="font-size:0.75rem;margin-bottom:8px;color:var(--accent-2)">Job Description</h4>
+                    <textarea id="jobDescInput" rows="8" placeholder="Paste the job description here..."></textarea>
+                </div>
+            </div>
+            <div style="margin-top:16px"><button class="btn btn-primary" onclick="analyzeResume()">Analyze
+                    Match</button></div>
+        </div>
+        <div id="resumeResults"></div>
     </div>
 
     <!-- System Monitor -->
@@ -451,6 +474,41 @@
         <div class="hash-row"><span class="hash-label">${algo}</span><span class="hash-value">${hash}</span></div>
     `).join('');
             document.getElementById('hashResults').innerHTML = `<div class="card"><h3>Hash Results</h3>${html}</div>`;
+        }
+
+        async function analyzeResume() {
+            const resume = document.getElementById('resumeInput').value;
+            const job_desc = document.getElementById('jobDescInput').value;
+            if (!resume || !job_desc) return alert("Please provide both resume and job description.");
+
+            const res = await fetch('/api/analyze-resume', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ resume, job_desc })
+            });
+            const data = await res.json();
+
+            const foundTags = data.found_keywords.map(k => `<span class="word-tag" style="border-color:var(--green);color:var(--green)">${k}</span>`).join('');
+            const missingTags = data.missing_keywords.map(k => `<span class="word-tag" style="border-color:var(--accent-2);color:var(--accent-2)">${k}</span>`).join('');
+
+            document.getElementById('resumeResults').innerHTML = `
+        <div class="card">
+            <h3>Match Analysis</h3>
+            <div class="stats-grid">
+                <div class="stat-box"><div class="label">Match Score</div><div class="value" style="color:var(--accent)">${data.match_score}%</div></div>
+                <div class="stat-box"><div class="label">Keywords Found</div><div class="value">${data.found_keywords.length}</div></div>
+                <div class="stat-box"><div class="label">Missing Keys</div><div class="value" style="color:var(--accent-2)">${data.missing_keywords.length}</div></div>
+            </div>
+            <div style="margin-top:20px">
+                <h4 style="font-size:0.8rem;margin-bottom:8px">✅ Keywords in Resume</h4>
+                <div class="word-cloud">${foundTags || 'No major keywords found.'}</div>
+            </div>
+            <div style="margin-top:20px">
+                <h4 style="font-size:0.8rem;margin-bottom:8px">❌ Missing Keywords</h4>
+                <div class="word-cloud">${missingTags || 'No missing keywords identified! Great job.'}</div>
+            </div>
+        </div>
+    `;
         }
 
         async function loadSystem() {

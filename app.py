@@ -229,11 +229,57 @@ class SystemMonitor:
         }
 
 
+# ─── Resume Analyzer Module ──────────────────────────────────────
+
+class ResumeAnalyzer:
+    """Analyze resumes against job descriptions for keywords."""
+    
+    @staticmethod
+    def analyze(resume_text, job_desc):
+        """Find common keywords and identifies missing ones."""
+        def get_keywords(text):
+            # Simple keyword extraction (words > 3 chars, lowercase)
+            words = re.findall(r'\b[a-z]{4,}\b', text.lower())
+            # Filter out common stop words (simplified list)
+            stops = {'with', 'from', 'that', 'this', 'your', 'have', 'been', 'which', 'about', 'their'}
+            return set(w for w in words if w not in stops)
+
+        resume_keys = get_keywords(resume_text)
+        job_keys = get_keywords(job_desc)
+        
+        found = resume_keys.intersection(job_keys)
+        missing = job_keys.difference(resume_keys)
+        
+        # Sort and limit
+        found = sorted(list(found))[:20]
+        missing = sorted(list(missing))[:20]
+        
+        match_score = round(len(resume_keys.intersection(job_keys)) / max(len(job_keys), 1) * 100)
+        
+        return {
+            "match_score": match_score,
+            "found_keywords": found,
+            "missing_keywords": missing,
+            "resume_count": len(resume_keys),
+            "job_count": len(job_keys)
+        }
+
 # ─── Routes ──────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/api/analyze-resume", methods=["POST"])
+def analyze_resume():
+    data = request.json
+    resume = data.get("resume", "")
+    job_desc = data.get("job_desc", "")
+    if not resume.strip() or not job_desc.strip():
+        return jsonify({"error": "Both resume and job description are required"}), 400
+    result = ResumeAnalyzer.analyze(resume, job_desc)
+    return jsonify(result)
 
 
 @app.route("/api/analyze-dir", methods=["POST"])
