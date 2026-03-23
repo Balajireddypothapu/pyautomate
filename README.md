@@ -84,6 +84,10 @@ Open **http://localhost:5002** in your browser.
 
 ![PyAutomate Features Demo](pyautomate_showcase_v2.webp)
 
+### Static Screenshots
+![Dashboard View](screenshots/pyautomate_1.png)
+![Resume AI View](screenshots/pyautomate_2.png)
+
 ## 📜 License
 
 MIT License
